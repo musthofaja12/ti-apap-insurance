@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"
+<head>
+    <meta charset="UTF-8">
+    <object th:include="~{fragments/common :: js}" th:remove="tag "></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag "></object>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Response Company</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f8ff, #add8e6);
+            color: #333;
+            margin-bottom: 5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex-grow: 1;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #333333;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        p {
+            color: #555555;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .btn {
+            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+        }
+
+        .btn-primary {
+            background-color: #1e90ff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #4169e1;
+        }
+
+        .btn-secondary {
+            background-color: #48d1cc;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #20b2aa;
+        }
+
+        .text-center {
+            margin-top: 3rem;
+        }
+        .card-img-top {
+            position: absolute;
+            top: -8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10rem;
+            height: 10rem;
+            border-radius: 50%;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card-img-top:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar('policy')}"></nav>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card text-center">
+        <img src="/images/alul-kharisma.png" alt="Success Image" class="card-img-top">
+
+        <div class="card-body">
+            <h1 th:text="${responseMessage}"></h1>
+
+            <div class="mt-4">
+                <a href="/" class="btn btn-primary mx-2">Home</a>
+                <a th:href="@{|/policy/add?nik=${nik}|}" class="btn btn-secondary mx-2">Kembali</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ho+j7jyWK8fNQe+A12WgZ8sos5prl66I5ix1NltpuLZsLVd7ZzlgI2FAK87Cs/wX"
+        crossorigin="anonymous"></script>
+</body>
+</html>

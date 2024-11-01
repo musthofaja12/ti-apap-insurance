@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+
+    <meta charset="UTF-8">
+    <title>Policy Statistics</title>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        body {
+            background: linear-gradient(135deg, #f0f8ff, #add8e6);
+            color: #333;
+            margin-bottom: 5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex-grow: 1;
+        }
+
+        h4 {
+            color: #1b8cbf;
+        }
+
+        .divider {
+            height: 2px;
+            background-color: #e0e0e0;
+            margin: 20px 0;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-select {
+            position: relative;
+        }
+
+        .custom-select::after {
+            content: "\f078";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            width: 80vw;
+            max-width: 80%;
+            height: auto;
+        }
+
+    </style>
+</head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar('policy')}"></nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Policy Statistics</h4>
+    </div>
+
+    <div class="divider"></div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <label class="mr-2" for="period">Select Period:</label>
+            <select id="period" name="period" class="form-control mr-4 custom-select" style="width: 12rem;">
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+            </select>
+
+            <label class="mr-2" for="year">Year:</label>
+            <input type="number" id="year" name="year" class="form-control mr-3" style="width: 12rem;" placeholder="2024">
+
+            <button onclick="renderChart()" class="btn btn-primary">Generate</button>
+        </div>
+
+    <canvas id="policyChart" style="margin-top: 20px;"></canvas>
+</div>
+
+<script>
+    let policyCreated = false;
+    let policyChart = null;
+
+    async function fetchPolicyData(period, year) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/policy/stat?period=${period}&year=${year}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    period: period,
+                    year: year
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching policy data:", error);
+            alert("Error fetching the policy data.");
+        }
+    }
+
+
+    async function renderChart() {
+        const period = document.getElementById("period").value;
+        const year = document.getElementById("year").value;
+
+        const data = await fetchPolicyData(period, year);
+
+        if (data) {
+            const labels = data.data.labels;
+            const values = data.data.values;
+
+            if (policyCreated) {
+                policyChart.destroy();
+            }
+
+            const ctx = document.getElementById('policyChart').getContext('2d');
+
+            policyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Policies',
+                        data: values,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            policyCreated = true;
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+spring:
+    application:
+        name: insurance2206082354
+    datasource:
+      url: ${DEV_DB}
+    jpa:
+      properties:
+        hibernate:
+          jdbc:
+            lob:
+              non_contextual_creation: true
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate:
+        ddl-auto: update

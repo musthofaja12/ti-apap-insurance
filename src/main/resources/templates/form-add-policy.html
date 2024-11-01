@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+
+    <title>Add Patient & Policy</title>
+    <style>
+
+        body {
+            background: linear-gradient(135deg, #f0f8ff, #add8e6);
+            color: #333;
+            margin-bottom: 5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex-grow: 1;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .divider {
+            height: 2px;
+            background-color: #d3d3d3;
+            margin: 20px 0;
+        }
+
+
+        .dataTables_wrapper {
+            margin-top: 20px;
+        }
+
+        .dataTables_length, .dataTables_filter {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            margin: 0 10px 0 0;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            height: 38px;
+            margin-left: 5px;
+            width: auto;
+        }
+
+        .dataTables_length {
+            float: left;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            float: left;
+            margin: 0;
+        }
+
+        #coverageTable_wrapper {
+            display: none;
+        }
+
+        h2 {
+            color: #ef6921;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar('policy')}"></nav>
+<div class="container my-5">
+    <div class="text-center my-4">
+        <h2 class="fw-bold" th:text="|New Policy for ${patient.name}|"></h2>
+        <p class="text-muted">Please fill in the details below to add a new policy.</p>
+    </div>
+    <div class="row justify-content-center">
+        <div class="card" style="width: 60rem;">
+            <div class="card-body">
+                <form th:action="@{/policy/add}" th:object="${policyDTO}" method="POST">
+                    <input class="form-control" type="hidden" th:field="*{patient}" th:value="*{patient}"/>
+
+                    <div class="row my-3">
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Nama:</strong>
+                                <span th:text="${patient.name}"></span>
+                            </p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Insurance Limit:</strong>
+                                <span th:if="${patient.getPClass() == 1}">Rp100.000.000,00</span>
+                                <span th:if="${patient.getPClass() == 2}">Rp50.000.000,00</span>
+                                <span th:if="${patient.getPClass() == 3}">Rp25.000.000,00</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row my-3">
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Class:</strong>
+                                <span th:text="${patient.getPClass()}"></span>
+                            </p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Available Limit:</strong>
+                                <span th:text="${patient.getAvailableLimitToString()}"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row my-3">
+                        <div class="col-sm-4">
+                            <label for="expiryDate" class="form-label">Expiry Date</label>
+                            <input class="form-control" type="date" id="expiryDate" th:field="*{expiryDate}"
+                                   placeholder="Select Expiry Date"/>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="row my-3">
+                        <div class="col-sm-9">
+                            <label for="company" class="form-label">Company</label>
+                            <select class="form-control" id="company" th:field="*{company}">
+                                <option value="" disabled>Select Company</option> <!-- Default option -->
+                                <option th:each="company : ${listCompany}" th:text="${company.name}"
+                                        th:value="${company.id}"
+                                        th:disabled="${listCompanyRegistered.contains(company)}"></option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" type="button" id="loadCoverages">Load Coverages
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="d-flex justify-content-between align-items-center my-3">
+                        <h4 class="fw-bold">Coverages</h4>
+                        <div id="totalCoverage" class="fw-bold">Total Coverage: Rp0,00</div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered" id="coverageTable">
+                                <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Coverage</th>
+                                    <th>Coverage Amount</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-center m-3">
+                        <button type="submit" class="btn btn-primary mx-2">Submit</button>
+                        <a class="btn btn-danger mx-2" href="/policy/viewall">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let coverageTable = $('#coverageTable').DataTable({
+            "pageLength": 5,
+            "lengthChange": true,
+            "lengthMenu": [5, 10, 25, 50],
+            "language": {
+                "lengthMenu": "Rows per page: _MENU_",
+                "info": "",
+                "infoEmpty": "",
+                "infoFiltered": ""
+            }
+        });
+
+        let totalCoverageAmount = 0;
+        $('#loadCoverages').on('click', function () {
+            var selectedCompanyId = $('#company').val();
+            if (!selectedCompanyId) {
+                alert("Please select a company first.");
+                return;
+            }
+
+            coverageTable.clear().draw();
+            totalCoverageAmount = 0;
+
+            $.ajax({
+                url: 'http://localhost:8080/api/company/' + selectedCompanyId + '/coverages',
+                type: 'GET',
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log(response);
+                    if (response.data.length > 0) {
+                        $.each(response.data, function (index, coverage) {
+                            let coverageAmount = coverage.coverageAmount;
+                            totalCoverageAmount += coverageAmount;
+
+                            let formattedAmount = new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 2
+                            }).format(coverageAmount);
+
+                            coverageTable.row.add([
+                                index + 1,
+                                coverage.name,
+                                formattedAmount
+                            ]).draw(false);
+                        });
+
+                        $('#coverageTable_wrapper').show();
+                        updateTotalCoverageDisplay(totalCoverageAmount);
+                    } else {
+                        alert("No coverages found for the selected company.");
+                    }
+                },
+                error: function (error) {
+                    alert("Error fetching coverages. Please try again.");
+                }
+            });
+        });
+
+        function updateTotalCoverageDisplay(totalAmount) {
+            let formattedTotal = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 2
+            }).format(totalAmount);
+            $('#totalCoverage').text('Total Coverage: ' + formattedTotal);
+        }
+    });
+
+</script>
+</body>
+</html>

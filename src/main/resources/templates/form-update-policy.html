@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+
+    <title>Add Patient & Policy</title>
+    <style>
+
+        body {
+            background: linear-gradient(135deg, #f0f8ff, #add8e6);
+            color: #333;
+            margin-bottom: 5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        h2 {
+            color: #ef6921;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .container {
+            flex-grow: 1;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .divider {
+            height: 2px;
+            background-color: #d3d3d3;
+            margin: 20px 0;
+        }
+
+
+        .dataTables_wrapper {
+            margin-top: 20px;
+        }
+
+        .dataTables_length, .dataTables_filter {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            margin: 0 10px 0 0;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            height: 38px;
+            margin-left: 5px;
+            width: auto;
+        }
+
+        .dataTables_length {
+            float: left;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            float: left;
+            margin: 0;
+        }
+
+    </style>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar('policy')}"></nav>
+<div class="container my-5">
+    <div class="text-center my-4">
+        <h2 class="fw-bold">Update Policy</h2>
+        <p class="text-muted">Please fill in the details below to update an existing policy.</p>
+    </div>
+    <div class="row justify-content-center">
+        <div class="card" style="width: 60rem;">
+            <div class="card-body">
+                <form th:action="@{/policy/update}" th:object="${policyDTO}" method="POST">
+                    <input class="form-control" type="hidden" th:field="*{id}" th:value="*{id}"/>
+                    <input class="form-control" type="hidden" th:field="*{patient}" th:value="*{patient}"/>
+                    <input class="form-control" type="hidden" th:field="*{company}" th:value="*{company}"/>
+
+                    <div class="row my-3">
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Policy ID:</strong>
+                                <span th:text="${policyDTO.id}"></span>
+                            </p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Total Coverage:</strong>
+                                <span th:text="${policyDTO.company.getTotalCoverageToString()}"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row my-3">
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Patient:</strong>
+                                <span th:text="${policyDTO.patient.name}"></span>
+                            </p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Total Covered:</strong>
+                                <span th:text="${policy.getTotalCoveredAmountToString()}"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row my-3">
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Company:</strong>
+                                <span th:text="${policyDTO.getCompany().name}"></span>
+                            </p>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <p class="patient-info"><strong>Status:</strong>
+                                <span th:if="${policy.status == 0}" class="badge badge-pill badge-success">Created</span>
+                                <span th:if="${policy.status == 1}" class="badge badge-pill badge-info">Partially Claimed</span>
+                                <span th:if="${policy.status == 2}" class="badge badge-pill badge-primary">Fully Claimed</span>
+                                <span th:if="${policy.status == 3}" class="badge badge-pill badge-secondary">Expired</span>
+                                <span th:if="${policy.status == 4}" class="badge badge-pill badge-danger">Cancelled</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row my-3">
+                        <div class="col-sm-4">
+                            <label for="expiryDate" class="form-label">Expiry Date</label>
+                            <input class="form-control" type="date" id="expiryDate" th:field="*{expiryDate}"
+                                   placeholder="Select Expiry Date"/>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="d-flex justify-content-between align-items-center my-3">
+                        <h4 class="fw-bold">Coverages</h4>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered" id="coverageTable">
+                                <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Coverage</th>
+                                    <th>Coverage Amount</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="coverage, iterStat: ${policyDTO.getCompany().getListCoverage()}">
+                                    <td th:text="${iterStat.index + 1}"></td>
+                                    <td th:text="${coverage.name}"></td>
+                                    <td th:text="${coverage.getCoverageAmountToString()}"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-center m-3">
+                        <button type="submit" class="btn btn-primary mx-2">Submit</button>
+                        <a class="btn btn-danger mx-2" th:href="@{|/policy/${policy.id}|}">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let coverageTable = $('#coverageTable').DataTable({
+            "pageLength": 5,
+            "lengthChange": true,
+            "lengthMenu": [5, 10, 25, 50],
+            "language": {
+                "lengthMenu": "Rows per page: _MENU_",
+                "info": "",
+                "infoEmpty": "",
+                "infoFiltered": ""
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

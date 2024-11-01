@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+    <title>Upgrade Patient Class</title>
+    <style>
+
+        body {
+            background: linear-gradient(135deg, #f0f8ff, #add8e6);
+            color: #333;
+            margin-bottom: 5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex-grow: 1;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        h2 {
+            color: #ef6921;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .patient-info {
+            margin-bottom: 15px;
+        }
+
+        .patient-info strong {
+            color: #ef6921;
+        }
+
+        .btn {
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            text-decoration: none;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .gap-3 {
+            gap: 1rem;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar('policy')}"></nav>
+<div class="container my-5">
+    <div class="text-center my-4">
+        <h2>Upgrade Patient Class</h2>
+    </div>
+    <div class="row justify-content-center">
+        <div class="card">
+            <div class="card-body">
+
+                <form th:action="@{/patient/upgrade-class}" th:object="${patientClassDTO}" method="POST">
+                    <input class="form-control" type="hidden" th:field="*{id}" th:value="*{id}"/>
+                    <input class="form-control" type="hidden" th:field="*{nik}" th:value="*{nik}"/>
+
+                    <p class="patient-info"><strong>NIK:</strong> <span th:text="${patient.nik}"></span></p>
+                    <p class="patient-info"><strong>Name:</strong> <span th:text="${patient.name}"></span></p>
+                    <p class="patient-info"><strong>Gender:</strong>
+                        <span th:if="${patient.gender == 0}">Male</span>
+                        <span th:if="${patient.gender == 1}">Female</span>
+                    </p>
+                    <p class="patient-info"><strong>Date of Birth:</strong> <span
+                            th:text="${#dates.format(patient.birthDate, 'MMMM dd, yyyy')}"></span></p>
+                    <p class="patient-info"><strong>Age:</strong> <span th:text="${patient.calculateAge()}"></span></p>
+                    <p class="patient-info"><strong>Class:</strong></p>
+                    <select class="form-select" th:field="*{insuranceClass}" th:value="*{insuranceClass}">
+                        <option th:selected="${patientClassDTO.insuranceClass == '1'}" value="1">Class 1
+                            (Rp100.000.000,00)
+                        </option>
+                        <option th:selected="${patientClassDTO.insuranceClass == '2'}" value="2"
+                                th:disabled="${patientClassDTO.insuranceClass == '1'}">Class 2
+                            (Rp50.000.000,00)
+                        </option>
+                        <option th:selected="${patientClassDTO.insuranceClass == '3'}" value="3"
+                                th:disabled="${patientClassDTO.insuranceClass == '2' || patientClassDTO.insuranceClass == '1'}">Class 3
+                            (Rp25.000.000,00)
+                        </option>
+                    </select>
+
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <a onclick="window.history.back()" href="javascript:void(0)" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Upgrade</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
